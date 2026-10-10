@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generic Daily PIN Generator</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f7f6;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .card {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            text-align: center;
+            max-width: 350px;
+            width: 100%;
+        }
+        h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 1.4rem;
+        }
+        .input-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+        .input-group label {
+            display: block;
+            font-size: 0.85rem;
+            color: #555;
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+        .input-group input {
+            width: 100%;
+            padding: 8px 10px;
+            box-sizing: border-box;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 1rem;
+            text-align: center;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        .date-label {
+            font-size: 0.9rem;
+            color: #666;
+            margin-top: 15px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .pin-display {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #2c3e50;
+            background: #eceff1;
+            padding: 10px;
+            border-radius: 8px;
+            letter-spacing: 4px;
+            margin: 5px 0 20px 0;
+        }
+        .nav-buttons {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+        }
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            flex: 1;
+            transition: background 0.2s;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+        button.today-btn {
+            background-color: #2ecc71;
+        }
+        button.today-btn:hover {
+            background-color: #27ae60;
+        }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <h2>PIN Generator</h2>
+    
+    <div class="input-group">
+        <label for="appModifier">App ID / Modifier (1 - 99):</label>
+        <input type="number" id="appModifier" min="1" max="99" value="1" oninput="updateUI()">
+    </div>
+
+    <div class="date-label" id="dateLabel">Today</div>
+    <div class="pin-display" id="pinDisplay">0000</div>
+    
+    <div class="nav-buttons">
+        <button onclick="changeDate(-1)">← Yesterday</button>
+        <button class="today-btn" onclick="resetToToday()">Today</button>
+        <button onclick="changeDate(1)">Tomorrow →</button>
+    </div>
+</div>
+
+<script>
+    // Variables to track the currently viewed date
+    let targetDate = new Date();
+
+    function calculatePIN(dateObj) {
+        const d = dateObj.getDate();        
+        const m = dateObj.getMonth() + 1;   
+        const y = dateObj.getFullYear();    
+
+        // Get modifier value safely (defaulting to 1 if empty/invalid)
+        let modifierInput = parseInt(document.getElementById('appModifier').value);
+        let mod = (isNaN(modifierInput) || modifierInput < 1) ? 1 : modifierInput;
+
+        // Core math formula incorporating the modifier (app ID)
+        let dynamicNumber = (d * 57) + (m * 13) + (y * 7) + (mod * 997);
+        let scrambled = dynamicNumber * dynamicNumber; 
+        
+        // Return 4-digit layout matching the extension
+        return (scrambled % 10000).toString().padStart(4, '0');
+    }
+
+    function updateUI() {
+        const todayStr = new Date().toDateString();
+        const targetStr = targetDate.toDateString();
+        
+        // Update label text
+        const label = document.getElementById('dateLabel');
+        if (targetStr === todayStr) {
+            label.innerText = "Today (" + targetDate.toLocaleDateString() + ")";
+        } else {
+            label.innerText = targetDate.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' });
+        }
+
+        // Calculate and show PIN
+        document.getElementById('pinDisplay').innerText = calculatePIN(targetDate);
+    }
+
+    function changeDate(days) {
+        targetDate.setDate(targetDate.getDate() + days);
+        updateUI();
+    }
+
+    function resetToToday() {
+        targetDate = new Date();
+        updateUI();
+    }
+
+    // Run on startup
+    updateUI();
+</script>
+
+</body>
+</html>
